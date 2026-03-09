@@ -22,19 +22,12 @@ public class TranslationService {
                     text,
                     Translate.TranslateOption.targetLanguage(targetLanguage)
             );
+            
+            log.info("Translated text to {}", targetLanguage);
             return translation.getTranslatedText();
         } catch (Exception e) {
-            log.error("Translation failed", e);
-            return text; // Return original text if translation fails
-        }
-    }
-    
-    public String detectLanguage(String text) {
-        try {
-            return translate.detect(text).getLanguage();
-        } catch (Exception e) {
-            log.error("Language detection failed", e);
-            return "en";
+            log.error("Error translating text", e);
+            throw new RuntimeException("Translation failed", e);
         }
     }
 }

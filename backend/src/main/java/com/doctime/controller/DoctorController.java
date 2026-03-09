@@ -1,12 +1,11 @@
 package com.doctime.controller;
 
-import com.doctime.dto.ApiResponse;
-import com.doctime.dto.DoctorDTO;
+import com.doctime.model.Doctor;
 import com.doctime.model.enums.Specialty;
-import com.doctime.service.DoctorService;
+import com.doctime.repository.DoctorRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,36 +14,34 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/doctors")
 @RequiredArgsConstructor
+@Tag(name = "Doctors", description = "Doctor management APIs")
 public class DoctorController {
     
-    private final DoctorService doctorService;
+    private final DoctorRepository doctorRepository;
     
     @GetMapping
-    public ResponseEntity<ApiResponse<List<DoctorDTO>>> getAllDoctors() {
-        List<DoctorDTO> doctors = doctorService.getAllDoctors();
-        return ResponseEntity.ok(ApiResponse.success(doctors));
+    @Operation(summary = "Get all doctors")
+    public ResponseEntity<List<Doctor>> getAllDoctors() {
+        return ResponseEntity.ok(doctorRepository.findAll());
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<DoctorDTO>> getDoctorById(@PathVariable Long id) {
-        DoctorDTO doctor = doctorService.getDoctorById(id);
-        return ResponseEntity.ok(ApiResponse.success(doctor));
-    }
-    
-    @GetMapping("/search")
-    public ResponseEntity<ApiResponse<Page<DoctorDTO>>> searchDoctors(
-            @RequestParam(required = false) Specialty specialty,
-            @RequestParam(required = false) Double minFee,
-            @RequestParam(required = false) Double maxFee,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Page<DoctorDTO> doctors = doctorService.searchDoctors(specialty, minFee, maxFee, PageRequest.of(page, size));
-        return ResponseEntity.ok(ApiResponse.success(doctors));
+    @Operation(summary = "Get doctor by ID")
+    public ResponseEntity<Doctor> getDoctor(@PathVariable Long id) {
+        return doctorRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
     
     @GetMapping("/specialty/{specialty}")
-    public ResponseEntity<ApiResponse<List<DoctorDTO>>> getDoctorsBySpecialty(@PathVariable Specialty specialty) {
-        List<DoctorDTO> doctors = doctorService.getDoctorsBySpecialty(specialty);
-        return ResponseEntity.ok(ApiResponse.success(doctors));
+    @Operation(summary = "Get doctors by specialty")
+    public ResponseEntity<List<Doctor>> getDoctorsBySpecialty(@PathVariable Specialty specialty) {
+        return ResponseEntity.ok(doctorRepository.findAvailableDoctorsBySpecialty(specialty));
+    }
+    
+    @GetMapping("/search")
+    @Operation(summary = "Search doctors by fee")
+    public ResponseEntity<List<Doctor>> searchDoctorsByFee(@RequestParam Double maxFee) {
+        return ResponseEntity.ok(doctorRepository.findByMaxFee(maxFee));
     }
 }

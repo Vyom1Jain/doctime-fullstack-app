@@ -1,8 +1,9 @@
 package com.doctime.service;
 
+import com.doctime.dto.AuthRequest;
 import com.doctime.dto.AuthResponse;
-import com.doctime.dto.LoginRequest;
 import com.doctime.dto.SignupRequest;
+import com.doctime.exception.ResourceNotFoundException;
 import com.doctime.model.Doctor;
 import com.doctime.model.Patient;
 import com.doctime.model.User;
@@ -33,7 +34,7 @@ public class AuthService {
     @Transactional
     public AuthResponse signup(SignupRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new RuntimeException("Email already registered");
         }
         
         User user = User.builder()
@@ -43,10 +44,12 @@ public class AuthService {
                 .phone(request.getPhone())
                 .role(request.getRole())
                 .active(true)
+                .emailVerified(false)
                 .build();
         
         user = userRepository.save(user);
         
+        // Create Patient or Doctor profile based on role
         if (request.getRole() == Role.PATIENT) {
             Patient patient = Patient.builder()
                     .user(user)
@@ -56,42 +59,47 @@ public class AuthService {
             Doctor doctor = Doctor.builder()
                     .user(user)
                     .experienceYears(0)
-                    .qualification("")
                     .consultationFee(0.0)
+                    .rating(0.0)
+                    .totalReviews(0)
+                    .availableForConsultation(false)
                     .build();
             doctorRepository.save(doctor);
         }
         
+        // Generate token
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
-        
         String token = tokenProvider.generateToken(authentication);
         
         return AuthResponse.builder()
                 .token(token)
-                .id(user.getId())
+                .userId(user.getId())
                 .email(user.getEmail())
                 .name(user.getName())
                 .role(user.getRole())
+                .profileImage(user.getProfileImage())
                 .build();
     }
     
-    public AuthResponse login(LoginRequest request) {
+    public AuthResponse login(AuthRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
         
         String token = tokenProvider.generateToken(authentication);
+        
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
         return AuthResponse.builder()
                 .token(token)
-                .id(user.getId())
+                .userId(user.getId())
                 .email(user.getEmail())
                 .name(user.getName())
                 .role(user.getRole())
+                .profileImage(user.getProfileImage())
                 .build();
     }
 }
