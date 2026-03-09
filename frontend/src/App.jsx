@@ -2,8 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ChatProvider } from './context/ChatContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import AppShell from './components/AppShell'
 
-// Pages
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import RoleSelectionPage from './pages/RoleSelectionPage'
@@ -21,41 +21,44 @@ import MyPatientsPage from './pages/doctor/MyPatientsPage'
 import PrescriptionPage from './pages/doctor/PrescriptionPage'
 import EarningsPage from './pages/doctor/EarningsPage'
 
+const Shell = ({ children }) => <AppShell>{children}</AppShell>
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <ChatProvider>
           <Routes>
+            {/* Public */}
             <Route path="/" element={<RoleSelectionPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
-            
-            {/* Patient Routes */}
+
+            {/* Patient */}
             <Route element={<ProtectedRoute roles={['PATIENT']} />}>
-              <Route path="/patient/dashboard" element={<PatientDashboard />} />
-              <Route path="/patient/find-doctor" element={<FindDoctor />} />
-              <Route path="/patient/billing" element={<BillingPage />} />
-              <Route path="/patient/reports" element={<ReportsPage />} />
-              <Route path="/patient/donations" element={<DonationsPage />} />
+              <Route path="/patient/dashboard" element={<Shell><PatientDashboard /></Shell>} />
+              <Route path="/patient/find-doctor" element={<Shell><FindDoctor /></Shell>} />
+              <Route path="/patient/billing" element={<Shell><BillingPage /></Shell>} />
+              <Route path="/patient/reports" element={<Shell><ReportsPage /></Shell>} />
+              <Route path="/patient/donations" element={<Shell><DonationsPage /></Shell>} />
             </Route>
-            
-            {/* Doctor Routes */}
+
+            {/* Doctor */}
             <Route element={<ProtectedRoute roles={['DOCTOR']} />}>
-              <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-              <Route path="/doctor/patients" element={<MyPatientsPage />} />
-              <Route path="/doctor/prescription/:appointmentId" element={<PrescriptionPage />} />
-              <Route path="/doctor/earnings" element={<EarningsPage />} />
+              <Route path="/doctor/dashboard" element={<Shell><DoctorDashboard /></Shell>} />
+              <Route path="/doctor/patients" element={<Shell><MyPatientsPage /></Shell>} />
+              <Route path="/doctor/prescription/:appointmentId" element={<Shell><PrescriptionPage /></Shell>} />
+              <Route path="/doctor/earnings" element={<Shell><EarningsPage /></Shell>} />
             </Route>
-            
-            {/* Shared Routes */}
+
+            {/* Shared */}
             <Route element={<ProtectedRoute roles={['PATIENT', 'DOCTOR']} />}>
-              <Route path="/appointments" element={<AppointmentsPage />} />
+              <Route path="/appointments" element={<Shell><AppointmentsPage /></Shell>} />
               <Route path="/chat/:appointmentId" element={<ChatPage />} />
               <Route path="/video/:appointmentId" element={<VideoCallPage />} />
-              <Route path="/profile" element={<ProfileSettingsPage />} />
+              <Route path="/profile" element={<Shell><ProfileSettingsPage /></Shell>} />
             </Route>
-            
+
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </ChatProvider>

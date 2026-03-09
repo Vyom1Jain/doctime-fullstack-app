@@ -10,6 +10,4 @@ import java.util.List;
 @Repository
 public interface DonationRepository extends JpaRepository<Donation, Long> {
     List<Donation> findByStatusOrderByCreatedAtDesc(DonationStatus status);
-    List<Donation> findByVerifiedOrderByCreatedAtDesc(Boolean verified);
-    List<Donation> findByPatientIdOrderByCreatedAtDesc(Long patientId);
 }

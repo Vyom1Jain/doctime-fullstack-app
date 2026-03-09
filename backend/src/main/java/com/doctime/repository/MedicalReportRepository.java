@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface MedicalReportRepository extends JpaRepository<MedicalReport, Long> {
-    List<MedicalReport> findByPatientIdOrderByUploadedAtDesc(Long patientId);
+    List<MedicalReport> findByPatientId(Long patientId);
 }
