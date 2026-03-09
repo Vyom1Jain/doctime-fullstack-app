@@ -1,33 +1,23 @@
 package com.doctime.service;
 
-import com.google.cloud.translate.Translate;
-import com.google.cloud.translate.TranslateOptions;
-import com.google.cloud.translate.Translation;
+// Stub implementation - Google Cloud Translate not yet integrated
+// import com.google.cloud.translate.Translate;
+// import com.google.cloud.translate.TranslateOptions;
+// import com.google.cloud.translate.Translation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
 public class TranslationService {
-    
-    private final Translate translate;
-    
+
     public TranslationService() {
-        this.translate = TranslateOptions.getDefaultInstance().getService();
+        // Stub constructor
     }
-    
+
     public String translateText(String text, String targetLanguage) {
-        try {
-            Translation translation = translate.translate(
-                    text,
-                    Translate.TranslateOption.targetLanguage(targetLanguage)
-            );
-            
-            log.info("Translated text to {}", targetLanguage);
-            return translation.getTranslatedText();
-        } catch (Exception e) {
-            log.error("Error translating text", e);
-            throw new RuntimeException("Translation failed", e);
-        }
+        // TODO: Implement real Google Cloud Translate integration
+        log.warn("Using stub translation - returning original text");
+        return text; // Return original text as stub
     }
 }

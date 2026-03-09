@@ -30,7 +30,7 @@ public class ReportService {
     public MedicalReport translate(Long reportId, String language) {
         MedicalReport report = getById(reportId);
         // Stub translation – replace with LibreTranslate / Google Translate API call
-        String translated = "[" + language.toUpperCase() + "] " + report.getContent();
+        String translated = "[" + language.toUpperCase() + "] " + report.getDescription();
         report.setTranslatedText(translated);
         return reportRepository.save(report);
     }
