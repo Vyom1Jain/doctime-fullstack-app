@@ -91,6 +91,7 @@ export default function DoctorCard({ doctor = {}, onBook }) {
       <button
         onClick={() => onBook?.(doctor)}
         disabled={!available}
+        aria-disabled={!available}
         className={`btn-primary w-full mt-1 ${!available ? 'opacity-60 cursor-not-allowed' : ''}`}
       >
         Book Appointment

@@ -9,7 +9,12 @@ export default function Card({ className = '', children, onClick }) {
       tabIndex={interactive ? 0 : undefined}
       onKeyDown={
         interactive
-          ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick(e)
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick(e);
+              }
+            }
           : undefined
       }
     >

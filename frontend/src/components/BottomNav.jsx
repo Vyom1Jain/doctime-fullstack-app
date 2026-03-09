@@ -36,10 +36,7 @@ export default function BottomNav() {
           <NavLink
             key={to}
             to={to}
-            className={({ isActive }) =>
-              `flex flex-1 flex-col items-center justify-center gap-1 py-2 text-xs font-medium transition-colors duration-150
-              ${isActive ? 'text-primary' : 'text-gray-500'}`
-            }
+            className="flex flex-1 flex-col items-center justify-center gap-1 py-2 text-xs font-medium transition-colors duration-150"
             aria-label={label}
           >
             {({ isActive }) => (
@@ -48,7 +45,7 @@ export default function BottomNav() {
                   className={`w-5 h-5 ${isActive ? 'text-primary' : 'text-gray-400'}`}
                   aria-hidden="true"
                 />
-                <span>{label}</span>
+                <span className={isActive ? 'text-primary' : 'text-gray-500'}>{label}</span>
               </>
             )}
           </NavLink>
