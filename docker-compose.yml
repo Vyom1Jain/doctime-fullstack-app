@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: doctime-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: doctime
+      MYSQL_USER: doctime_user
+      MYSQL_PASSWORD: doctime_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - doctime-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: doctime-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/doctime
+      SPRING_DATASOURCE_USERNAME: doctime_user
+      SPRING_DATASOURCE_PASSWORD: doctime_pass
+      JWT_SECRET: ${JWT_SECRET:-your-default-secret-key-change-this-in-production}
+      AGORA_APP_ID: ${AGORA_APP_ID}
+      AGORA_APP_CERTIFICATE: ${AGORA_APP_CERTIFICATE}
+      GOOGLE_CLOUD_PROJECT_ID: ${GOOGLE_CLOUD_PROJECT_ID}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - doctime-network
+    volumes:
+      - ./backend/logs:/app/logs
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: doctime-frontend
+    ports:
+      - "80:80"
+    environment:
+      VITE_API_BASE_URL: http://backend:8080/api
+      VITE_WS_URL: ws://backend:8080/ws
+      VITE_AGORA_APP_ID: ${AGORA_APP_ID}
+    depends_on:
+      - backend
+    networks:
+      - doctime-network
+
+volumes:
+  mysql_data:
+
+networks:
+  doctime-network:
+    driver: bridge
