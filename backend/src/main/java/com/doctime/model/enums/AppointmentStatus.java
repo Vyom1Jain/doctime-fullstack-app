@@ -3,7 +3,7 @@ package com.doctime.model.enums;
 public enum AppointmentStatus {
     SCHEDULED,
     CONFIRMED,
-    ONGOING,
+    IN_PROGRESS,
     COMPLETED,
     CANCELLED,
     NO_SHOW

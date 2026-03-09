@@ -1,9 +1,8 @@
 package com.doctime.model.enums;
 
 public enum DonationStatus {
-    PENDING_VERIFICATION,
+    PENDING,
     ACTIVE,
     COMPLETED,
-    CLOSED,
-    REJECTED
+    CANCELLED
 }

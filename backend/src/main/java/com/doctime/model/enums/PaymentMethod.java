@@ -1,8 +1,7 @@
 package com.doctime.model.enums;
 
 public enum PaymentMethod {
-    CREDIT_CARD,
-    DEBIT_CARD,
+    CARD,
     UPI,
     NET_BANKING,
     WALLET,

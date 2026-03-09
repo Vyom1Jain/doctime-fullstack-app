@@ -9,6 +9,7 @@ import lombok.Data;
 
 @Data
 public class SignupRequest {
+    
     @NotBlank(message = "Name is required")
     private String name;
     
