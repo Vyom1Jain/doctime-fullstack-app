@@ -1,0 +1,48 @@
+{
+  "app": {
+    "name": "Doctime",
+    "tagline": "Your health, your time."
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "email": "Email / Phone",
+    "password": "Password",
+    "forgot": "Forgot Password?",
+    "welcome": "Welcome Back",
+    "chooseRole": "Choose your role to get started",
+    "doctor": "I am a Doctor",
+    "patient": "I am a Patient"
+  },
+  "dashboard": {
+    "welcome": "Hello",
+    "appointments": "Appointments",
+    "chats": "Chats",
+    "prescriptions": "Prescriptions",
+    "patients": "Patients",
+    "earnings": "Earnings",
+    "donations": "Donations"
+  },
+  "appointments": {
+    "find": "Find a Doctor",
+    "book": "Book Appointment",
+    "upcoming": "Upcoming",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  },
+  "chat": {
+    "type": "Type your message...",
+    "encrypted": "This chat is end-to-end encrypted"
+  },
+  "video": {
+    "join": "Join Call",
+    "notes": "Consultation Notes",
+    "complete": "Consultation Complete"
+  },
+  "profile": {
+    "settings": "Profile & Settings",
+    "edit": "Edit Profile",
+    "language": "Language",
+    "logout": "Log Out"
+  }
+}
