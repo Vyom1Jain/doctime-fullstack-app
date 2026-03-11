@@ -5,13 +5,13 @@ databases:
     user: doctime_user
 
 services:
-  # -- Backend (Spring Boot) --
+  # -- Backend (Spring Boot) - Nixpacks auto-detects Java --
   - type: web
     name: vyom-doctime-backend
-    runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
-    plan: starter
+    plan: free
+    rootDir: backend
+    buildCommand: mvn clean package -DskipTests
+    startCommand: java -jar target/doctime-backend-1.0.0.jar
     healthCheckPath: /api/auth/login
     envVars:
       - key: SPRING_DATASOURCE_URL
@@ -57,7 +57,7 @@ services:
       - key: FILE_MAX_SIZE
         value: 10485760
 
-  # -- Frontend (Static Site) --
+  # -- Frontend (React Static Site) --
   - type: web
     name: vyom-doctime-frontend
     env: static
