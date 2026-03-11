@@ -5,26 +5,16 @@ databases:
     user: doctime_user
 
 services:
-  # ── Backend (Spring Boot) ──
+  # -- Backend (Spring Boot) --
   - type: web
     name: doctime-backend
-    runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    env: java
     plan: free
+    rootDir: backend
+    buildCommand: mvn clean package -DskipTests
+    startCommand: java -jar target/*.jar
+    healthCheckPath: /api/auth/login
     envVars:
-      - key: DB_URL
-        fromDatabase:
-          name: doctime-db
-          property: connectionString
-      - key: DB_USERNAME
-        fromDatabase:
-          name: doctime-db
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: doctime-db
-          property: password
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
           name: doctime-db
@@ -43,10 +33,16 @@ services:
         value: org.hibernate.dialect.PostgreSQLDialect
       - key: JWT_SECRET
         generateValue: true
+      - key: JWT_EXPIRATION
+        value: 86400000
       - key: AGORA_APP_ID
         sync: false
       - key: AGORA_APP_CERTIFICATE
         sync: false
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: 587
       - key: MAIL_USERNAME
         sync: false
       - key: MAIL_PASSWORD
@@ -57,12 +53,15 @@ services:
         value: https://doctime-frontend.onrender.com
       - key: BACKEND_URL
         value: https://doctime-backend.onrender.com
-    healthCheckPath: /api/auth/login
+      - key: FILE_UPLOAD_DIR
+        value: ./uploads
+      - key: FILE_MAX_SIZE
+        value: 10485760
 
-  # ── Frontend (Static Site) ──
+  # -- Frontend (Static Site) --
   - type: web
     name: doctime-frontend
-    runtime: static
+    env: static
     buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: frontend/dist
     plan: free
