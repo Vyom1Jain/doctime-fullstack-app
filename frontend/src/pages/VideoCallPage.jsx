@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -14,7 +14,7 @@ const VideoCallPage = () => {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [joined, setJoined] = useState(false);
-  const [remoteUser, setRemoteUser] = useState(null);
+  const [remoteUsers, setRemoteUsers] = useState([]);
   const [audioMuted, setAudioMuted] = useState(false);
   const [videoMuted, setVideoMuted] = useState(false);
   const [error, setError] = useState(null);
@@ -23,43 +23,39 @@ const VideoCallPage = () => {
   const clientRef = useRef(null);
   const localTracksRef = useRef({ audioTrack: null, videoTrack: null });
   const localVideoRef = useRef(null);
-  const remoteVideoRef = useRef(null);
-  const initRef = useRef(false); // prevent StrictMode double-init
+  const remoteVideoRefs = useRef({});
+  const initRef = useRef(false);
 
-  // Play remote video whenever remoteUser or its videoTrack changes
+  // Play remote video tracks whenever remoteUsers changes
   useEffect(() => {
-    const el = remoteVideoRef.current;
-    const track = remoteUser?.videoTrack;
-    if (el && track) {
-      track.play(el);
-    }
-    return () => {
-      // Stop playing on the element when unmounting or track changes
-      if (track) {
-        try {
-          track.stop();
-        } catch (_) {}
+    remoteUsers.forEach((ru) => {
+      const el = remoteVideoRefs.current[ru.uid];
+      if (el && ru.videoTrack) {
+        try { ru.videoTrack.play(el); } catch (_) {}
       }
-    };
-  }, [remoteUser]);
+      if (ru.audioTrack) {
+        try { ru.audioTrack.play(); } catch (_) {}
+      }
+    });
+  }, [remoteUsers]);
 
-  // Play local video when joined and div is available
+  // Play local video when joined
   useEffect(() => {
     const { videoTrack } = localTracksRef.current;
     if (joined && videoTrack && localVideoRef.current) {
-      videoTrack.play(localVideoRef.current);
+      try { videoTrack.play(localVideoRef.current); } catch (_) {}
     }
   }, [joined]);
 
   useEffect(() => {
-    // Reset init guard when appointmentId changes (new call)
     initRef.current = false;
   }, [appointmentId]);
 
   useEffect(() => {
-    if (initRef.current) return; // StrictMode guard — only init once
+    if (initRef.current) return;
     initRef.current = true;
     let mounted = true;
+
     const init = async () => {
       try {
         const channelName = `appt_${appointmentId}`;
@@ -72,7 +68,7 @@ const VideoCallPage = () => {
 
         if (!appId || appId === "YOUR_AGORA_APP_ID") {
           throw new Error(
-            "Agora is not configured. Ask your admin to set AGORA_APP_ID.",
+            "Agora is not configured. Ask your admin to set AGORA_APP_ID."
           );
         }
 
@@ -85,33 +81,38 @@ const VideoCallPage = () => {
         clientRef.current = client;
 
         client.on("connection-state-change", (curState, prevState, reason) => {
-          console.log(
-            `Agora connection: ${prevState} → ${curState}, reason: ${reason}`,
-          );
           if (curState === "DISCONNECTED" && reason === "FALLBACK" && mounted) {
             setError("Video connection lost. Please try again.");
           }
         });
 
+        // user-published: subscribe then add/update in state so the ref div exists
         client.on("user-published", async (ru, mediaType) => {
           await client.subscribe(ru, mediaType);
-          if (mediaType === "video" && mounted) {
-            setRemoteUser(ru);
-          }
-          if (mediaType === "audio") {
-            ru.audioTrack?.play();
+          if (mounted) {
+            setRemoteUsers((prev) => {
+              const existing = prev.find((u) => u.uid === ru.uid);
+              if (existing) {
+                return prev.map((u) => (u.uid === ru.uid ? ru : u));
+              }
+              return [...prev, ru];
+            });
           }
         });
 
         client.on("user-unpublished", (ru, mediaType) => {
           if (mediaType === "video" && mounted) {
-            setRemoteUser(null);
+            // Keep user in list but their videoTrack will be null
+            setRemoteUsers((prev) =>
+              prev.map((u) => (u.uid === ru.uid ? ru : u))
+            );
           }
         });
 
-        client.on("user-left", () => {
+        client.on("user-left", (ru) => {
           if (mounted) {
-            setRemoteUser(null);
+            setRemoteUsers((prev) => prev.filter((u) => u.uid !== ru.uid));
+            delete remoteVideoRefs.current[ru.uid];
           }
         });
 
@@ -128,33 +129,23 @@ const VideoCallPage = () => {
         if (mounted)
           setError(
             e.message ||
-              "Failed to connect to video. Check camera/mic permissions.",
+              "Failed to connect to video. Check camera/mic permissions."
           );
       }
     };
+
     init();
 
     return () => {
       mounted = false;
-      // Do NOT reset initRef here — it must survive StrictMode remount
       const cleanup = async () => {
         const { audioTrack, videoTrack } = localTracksRef.current;
-        try {
-          audioTrack?.stop();
-        } catch (_) {}
-        try {
-          audioTrack?.close();
-        } catch (_) {}
-        try {
-          videoTrack?.stop();
-        } catch (_) {}
-        try {
-          videoTrack?.close();
-        } catch (_) {}
+        try { audioTrack?.stop(); } catch (_) {}
+        try { audioTrack?.close(); } catch (_) {}
+        try { videoTrack?.stop(); } catch (_) {}
+        try { videoTrack?.close(); } catch (_) {}
         localTracksRef.current = { audioTrack: null, videoTrack: null };
-        try {
-          await clientRef.current?.leave();
-        } catch (_) {}
+        try { await clientRef.current?.leave(); } catch (_) {}
         clientRef.current = null;
       };
       cleanup();
@@ -166,48 +157,25 @@ const VideoCallPage = () => {
       const client = clientRef.current;
       const { audioTrack, videoTrack } = localTracksRef.current;
 
-      // 1. Stop remote tracks (incoming audio/video)
-      if (remoteUser) {
-        try {
-          remoteUser.audioTrack?.stop();
-        } catch (_) {}
-        try {
-          remoteUser.videoTrack?.stop();
-        } catch (_) {}
-      }
-      setRemoteUser(null);
+      remoteUsers.forEach((ru) => {
+        try { ru.audioTrack?.stop(); } catch (_) {}
+        try { ru.videoTrack?.stop(); } catch (_) {}
+      });
+      setRemoteUsers([]);
 
-      // 2. Unpublish local tracks from channel (stops outgoing)
       if (client) {
         try {
           await client.unpublish([audioTrack, videoTrack].filter(Boolean));
         } catch (_) {}
       }
-
-      // 3. Stop and close local tracks to release camera/mic
-      if (audioTrack) {
-        try {
-          audioTrack.stop();
-        } catch (_) {}
-        try {
-          audioTrack.close();
-        } catch (_) {}
-      }
-      if (videoTrack) {
-        try {
-          videoTrack.stop();
-        } catch (_) {}
-        try {
-          videoTrack.close();
-        } catch (_) {}
-      }
+      try { audioTrack?.stop(); } catch (_) {}
+      try { audioTrack?.close(); } catch (_) {}
+      try { videoTrack?.stop(); } catch (_) {}
+      try { videoTrack?.close(); } catch (_) {}
       localTracksRef.current = { audioTrack: null, videoTrack: null };
 
-      // 4. Leave channel (severs connection entirely)
       if (client) {
-        try {
-          await client.leave();
-        } catch (_) {}
+        try { await client.leave(); } catch (_) {}
       }
       clientRef.current = null;
     } catch (_) {}
@@ -262,12 +230,16 @@ const VideoCallPage = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={toggleAudio}
-            className={`text-xs px-3 py-1 rounded-full transition-colors ${audioMuted ? "bg-yellow-500" : "bg-slate-700 hover:bg-slate-600"}`}>
+            className={`text-xs px-3 py-1 rounded-full transition-colors ${
+              audioMuted ? "bg-yellow-500" : "bg-slate-700 hover:bg-slate-600"
+            }`}>
             {audioMuted ? "🔇 Unmute" : "🎤 Mute"}
           </button>
           <button
             onClick={toggleVideo}
-            className={`text-xs px-3 py-1 rounded-full transition-colors ${videoMuted ? "bg-yellow-500" : "bg-slate-700 hover:bg-slate-600"}`}>
+            className={`text-xs px-3 py-1 rounded-full transition-colors ${
+              videoMuted ? "bg-yellow-500" : "bg-slate-700 hover:bg-slate-600"
+            }`}>
             {videoMuted ? "📷 Show" : "📹 Hide"}
           </button>
           <button
@@ -299,29 +271,43 @@ const VideoCallPage = () => {
               <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
               <p className="text-sm text-slate-400">Connecting to video…</p>
             </div>
+          ) : remoteUsers.length > 0 ? (
+            <div className="w-full h-full grid grid-cols-1">
+              {remoteUsers.map((ru) => (
+                <div
+                  key={ru.uid}
+                  ref={(el) => {
+                    if (el) {
+                      remoteVideoRefs.current[ru.uid] = el;
+                      // Play immediately if track already available when div mounts
+                      if (ru.videoTrack) {
+                        try { ru.videoTrack.play(el); } catch (_) {}
+                      }
+                    }
+                  }}
+                  className="w-full h-full"
+                />
+              ))}
+            </div>
           ) : (
-            <>
-              {remoteUser ? (
-                <div ref={remoteVideoRef} className="w-full h-full" />
-              ) : (
-                <div className="text-center space-y-3">
-                  <div className="animate-pulse text-5xl">👤</div>
-                  <p className="text-sm text-slate-300 font-medium">
-                    Waiting for other participant to join…
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    Share the appointment link with the other person
-                  </p>
-                </div>
-              )}
-            </>
+            <div className="text-center space-y-3">
+              <div className="animate-pulse text-5xl">👤</div>
+              <p className="text-sm text-slate-300 font-medium">
+                Waiting for other participant to join…
+              </p>
+              <p className="text-xs text-slate-500">
+                Share the appointment link with the other person
+              </p>
+            </div>
           )}
         </div>
 
-        {/* Local video - always in DOM so track can play on it; visible only when joined */}
+        {/* Local video pip */}
         <div
           ref={localVideoRef}
-          className={`absolute bottom-4 right-4 w-36 h-28 rounded-lg bg-slate-700 overflow-hidden border-2 border-slate-600 z-10 ${joined ? "" : "hidden"}`}
+          className={`absolute bottom-4 right-4 w-36 h-28 rounded-lg bg-slate-700 overflow-hidden border-2 border-slate-600 z-10 ${
+            joined ? "" : "hidden"
+          }`}
         />
 
         {showNotes && (
