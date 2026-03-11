@@ -46,21 +46,33 @@ public class Patient {
     @Column(length = 500)
     private String currentMedications;
 
+    @Column(length = 1000)
+    private String medicalHistory;
+
+    private String address;
+    private String city;
+    private String state;
+    private String country;
+    private String pincode;
+
+    private Double height;
+    private Double weight;
+
     private String emergencyContactName;
     private String emergencyContactPhone;
 
     @JsonIgnore
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
     @Builder.Default
-    private List<Appointment> appointments = new ArrayList<>();
+    private List<com.doctime.model.Appointment> appointments = new ArrayList<>();
 
     @JsonIgnore
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
     @Builder.Default
-    private List<MedicalReport> medicalReports = new ArrayList<>();
+    private List<com.doctime.model.MedicalReport> medicalReports = new ArrayList<>();
 
     @JsonIgnore
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
     @Builder.Default
-    private List<Donation> donations = new ArrayList<>();
+    private List<com.doctime.model.Donation> donations = new ArrayList<>();
 }
