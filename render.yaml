@@ -5,20 +5,19 @@ databases:
     user: doctime_user
 
 services:
-  # -- Backend (Spring Boot via Node env + Nixpacks) --
+  # -- Backend (Spring Boot via Docker) --
   - type: web
     name: vyom-doctime-backend
-    env: node
+    env: docker
     plan: free
     rootDir: backend
-    buildCommand: apt-get install -y maven && mvn clean package -DskipTests
-    startCommand: java -jar target/doctime-backend-1.0.0.jar
-    healthCheckPath: /api/auth/login
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health
     envVars:
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
           name: vyom-doctime-db
-          property: connectionString
+          property: internalConnectionString
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: vyom-doctime-db

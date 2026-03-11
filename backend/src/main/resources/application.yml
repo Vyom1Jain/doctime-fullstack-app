@@ -66,6 +66,15 @@ springdoc:
     path: /swagger-ui.html
     operations-sorter: alpha
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
 logging:
   level:
     com.doctime: DEBUG
