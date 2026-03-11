@@ -6,9 +6,15 @@ export default defineConfig({
   define: {
     global: "globalThis",
   },
+  optimizeDeps: {
+    include: ["sockjs-client"],
+  },
   build: {
     outDir: "dist",
     sourcemap: false,
+    commonjsOptions: {
+      include: [/sockjs-client/, /node_modules/],
+    },
   },
   server: {
     port: 5173,
