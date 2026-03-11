@@ -5,12 +5,13 @@ databases:
     user: doctime_user
 
 services:
-  # -- Backend (Spring Boot) - Nixpacks auto-detects Java --
+  # -- Backend (Spring Boot via Node env + Nixpacks) --
   - type: web
     name: vyom-doctime-backend
+    env: node
     plan: free
     rootDir: backend
-    buildCommand: mvn clean package -DskipTests
+    buildCommand: apt-get install -y maven && mvn clean package -DskipTests
     startCommand: java -jar target/doctime-backend-1.0.0.jar
     healthCheckPath: /api/auth/login
     envVars:
