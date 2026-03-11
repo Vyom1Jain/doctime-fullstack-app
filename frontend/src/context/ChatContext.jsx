@@ -7,8 +7,10 @@ import {
   useCallback,
 } from "react";
 import { Client } from "@stomp/stompjs";
-import SockJS from "sockjs-client";
+import * as SockJSModule from "sockjs-client";
 import { useAuth } from "./AuthContext";
+
+const SockJS = SockJSModule.default || SockJSModule;
 
 const ChatContext = createContext(null);
 
@@ -27,27 +29,30 @@ export const ChatProvider = ({ children }) => {
   const subscriptionRef = useRef(null);
 
   const connect = useCallback(() => {
-    if (clientRef.current) return; // already connected or connecting
-    const token = localStorage.getItem("token");
-    const socket = new SockJS(import.meta.env.VITE_WS_URL || "/ws");
-    const stompClient = new Client({
-      webSocketFactory: () => socket,
-      connectHeaders: {
-        Authorization: token ? `Bearer ${token}` : "",
-      },
-      reconnectDelay: 5000,
-      onConnect: () => {
-        setConnected(true);
-        console.log("WebSocket connected");
-      },
-      onDisconnect: () => {
-        setConnected(false);
-        console.log("WebSocket disconnected");
-      },
-    });
-
-    stompClient.activate();
-    clientRef.current = stompClient;
+    if (clientRef.current) return;
+    try {
+      const token = localStorage.getItem("token");
+      const wsUrl = import.meta.env.VITE_WS_URL || "/ws";
+      const stompClient = new Client({
+        webSocketFactory: () => new SockJS(wsUrl),
+        connectHeaders: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+        reconnectDelay: 5000,
+        onConnect: () => {
+          setConnected(true);
+          console.log("WebSocket connected");
+        },
+        onDisconnect: () => {
+          setConnected(false);
+          console.log("WebSocket disconnected");
+        },
+      });
+      stompClient.activate();
+      clientRef.current = stompClient;
+    } catch (e) {
+      console.warn("WebSocket connection failed:", e);
+    }
   }, []);
 
   const disconnect = useCallback(() => {
@@ -65,7 +70,6 @@ export const ChatProvider = ({ children }) => {
   const subscribeToChat = useCallback(
     (appointmentId, callback) => {
       if (clientRef.current && connected) {
-        // Unsubscribe previous subscription if any
         if (subscriptionRef.current) {
           subscriptionRef.current.unsubscribe();
         }
@@ -76,7 +80,6 @@ export const ChatProvider = ({ children }) => {
             callback(messageData);
           },
         );
-        // Return cleanup function
         return () => {
           if (subscriptionRef.current) {
             subscriptionRef.current.unsubscribe();
@@ -84,7 +87,7 @@ export const ChatProvider = ({ children }) => {
           }
         };
       }
-      return () => {}; // no-op cleanup
+      return () => {};
     },
     [connected],
   );
@@ -101,7 +104,6 @@ export const ChatProvider = ({ children }) => {
     [connected],
   );
 
-  // Only connect when user is authenticated
   useEffect(() => {
     if (user) {
       connect();
