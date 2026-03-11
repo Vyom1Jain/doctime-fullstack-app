@@ -14,10 +14,18 @@ services:
     dockerfilePath: ./Dockerfile
     healthCheckPath: /actuator/health
     envVars:
-      - key: SPRING_DATASOURCE_URL
+      - key: DB_HOST
         fromDatabase:
           name: vyom-doctime-db
-          property: internalConnectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: vyom-doctime-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: vyom-doctime-db
+          property: database
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: vyom-doctime-db
