@@ -8,5 +8,7 @@ public enum ReportType {
     ULTRASOUND,
     ECG,
     PRESCRIPTION,
+    IMAGING,
+    DISCHARGE_SUMMARY,
     OTHER
 }

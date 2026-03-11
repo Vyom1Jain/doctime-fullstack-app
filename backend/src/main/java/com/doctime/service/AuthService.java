@@ -8,6 +8,7 @@ import com.doctime.model.Doctor;
 import com.doctime.model.Patient;
 import com.doctime.model.User;
 import com.doctime.model.enums.Role;
+import com.doctime.model.enums.Specialty;
 import com.doctime.repository.DoctorRepository;
 import com.doctime.repository.PatientRepository;
 import com.doctime.repository.UserRepository;
@@ -38,6 +39,14 @@ public class AuthService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already registered");
         }
+
+        // Check for duplicate phone number if provided
+        if (request.getPhone() != null && !request.getPhone().trim().isEmpty()) {
+            if (userRepository.existsByPhone(request.getPhone())) {
+                throw new IllegalArgumentException("Phone number already registered");
+            }
+        }
+
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
@@ -51,7 +60,13 @@ public class AuthService {
             Patient patient = Patient.builder().user(user).build();
             patientRepository.save(patient);
         } else if (user.getRole() == Role.DOCTOR) {
-            Doctor doctor = Doctor.builder().user(user).build();
+            Doctor doctor = Doctor.builder()
+                    .user(user)
+                    .specialty(Specialty.GENERAL_PRACTITIONER)
+                    .experienceYears(0)
+                    .qualification("To be updated")
+                    .consultationFee(0.0)
+                    .build();
             doctorRepository.save(doctor);
         }
 

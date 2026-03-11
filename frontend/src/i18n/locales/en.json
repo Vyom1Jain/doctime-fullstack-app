@@ -12,7 +12,9 @@
     "welcome": "Welcome Back",
     "chooseRole": "Choose your role to get started",
     "doctor": "I am a Doctor",
-    "patient": "I am a Patient"
+    "patient": "I am a Patient",
+    "patientDesc": "Book visits, video calls, manage reports.",
+    "doctorDesc": "Manage appointments, patients and earnings."
   },
   "dashboard": {
     "welcome": "Hello",
@@ -32,7 +34,7 @@
   },
   "chat": {
     "type": "Type your message...",
-    "encrypted": "This chat is end-to-end encrypted"
+    "encrypted": "Secure chat"
   },
   "video": {
     "join": "Join Call",

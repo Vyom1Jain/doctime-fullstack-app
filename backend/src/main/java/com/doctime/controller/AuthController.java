@@ -7,7 +7,9 @@ import com.doctime.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,13 +22,21 @@ public class AuthController {
 
     @PostMapping("/signup")
     @Operation(summary = "Register a new patient or doctor")
-    public ResponseEntity<AuthResponse> signup(@RequestBody SignupRequest request) {
-        return ResponseEntity.ok(authService.signup(request));
+    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest request) {
+        try {
+            return ResponseEntity.ok(authService.signup(request));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(java.util.Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of("error", "Signup failed: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/login")
     @Operation(summary = "Login and receive JWT token")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 }

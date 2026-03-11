@@ -23,8 +23,9 @@ public class ChatService {
     private final AppointmentRepository appointmentRepository;
     private final UserRepository userRepository;
 
+    @Transactional(readOnly = true)
     public List<Message> getMessages(Long appointmentId) {
-        return messageRepository.findByAppointmentIdOrderBySentAtAsc(appointmentId);
+        return messageRepository.findByAppointmentIdWithSender(appointmentId);
     }
 
     @Transactional

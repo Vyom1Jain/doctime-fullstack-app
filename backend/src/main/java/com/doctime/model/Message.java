@@ -1,6 +1,8 @@
 package com.doctime.model;
 
 import com.doctime.model.enums.MessageType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -16,32 +18,35 @@ import java.time.LocalDateTime;
 @Builder
 @EntityListeners(AuditingEntityListener.class)
 public class Message {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "appointment_id", nullable = false)
     private Appointment appointment;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", nullable = false)
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private User sender;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MessageType type;
-    
+
     @Column(length = 5000, nullable = false)
     private String content;
-    
+
     private String fileUrl;
     private String fileName;
-    
+
     @Column(nullable = false)
+    @Builder.Default
     private Boolean isRead = false;
-    
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime sentAt;

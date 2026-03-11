@@ -18,6 +18,7 @@ public class VideoService {
     private final VideoNoteRepository videoNoteRepository;
     private final AppointmentRepository appointmentRepository;
 
+    @Transactional(readOnly = true)
     public Optional<VideoNote> getNote(Long appointmentId) {
         return videoNoteRepository.findByAppointmentId(appointmentId);
     }

@@ -1,6 +1,6 @@
 package com.doctime.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,7 +10,11 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "video_notes")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class VideoNote {
 
     @Id
@@ -19,7 +23,7 @@ public class VideoNote {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "appointment_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnore
     private Appointment appointment;
 
     @Column(columnDefinition = "TEXT")

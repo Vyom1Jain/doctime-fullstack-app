@@ -10,9 +10,12 @@ import java.util.List;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
-    
+
     List<Message> findByAppointmentIdOrderBySentAtAsc(Long appointmentId);
-    
+
+    @Query("SELECT m FROM Message m JOIN FETCH m.sender WHERE m.appointment.id = :appointmentId ORDER BY m.sentAt ASC")
+    List<Message> findByAppointmentIdWithSender(@Param("appointmentId") Long appointmentId);
+
     @Query("SELECT COUNT(m) FROM Message m WHERE m.appointment.id = :appointmentId AND m.isRead = false AND m.sender.id != :userId")
     Long countUnreadMessages(@Param("appointmentId") Long appointmentId, @Param("userId") Long userId);
 }

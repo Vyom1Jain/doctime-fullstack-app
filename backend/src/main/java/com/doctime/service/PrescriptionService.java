@@ -22,20 +22,26 @@ public class PrescriptionService {
 
     @Transactional
     public Prescription createPrescription(Long doctorId, Long appointmentId, PrescriptionRequest request) {
-        Appointment appointment = appointmentRepository.findById(appointmentId)
+        Appointment appointment = appointmentRepository.findByIdWithRelations(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
 
         if (!appointment.getDoctor().getId().equals(doctorId)) {
             throw new RuntimeException("Unauthorized");
         }
 
-        Prescription prescription = Prescription.builder()
-                .doctor(appointment.getDoctor())
-                .appointment(appointment)
-                .diagnosis(request.getDiagnosis())
-                .generalAdvice(request.getGeneralAdvice())
-                .nextVisit(request.getNextVisit())
-                .build();
+        // Update existing prescription if one already exists for this appointment
+        Prescription prescription = prescriptionRepository.findByAppointmentId(appointmentId)
+                .orElse(Prescription.builder()
+                        .doctor(appointment.getDoctor())
+                        .appointment(appointment)
+                        .build());
+
+        prescription.setDiagnosis(request.getDiagnosis());
+        prescription.setGeneralAdvice(request.getGeneralAdvice());
+        prescription.setNextVisit(request.getNextVisit());
+
+        // Clear old medicines and add new ones
+        prescription.getMedicines().clear();
 
         List<Medicine> medicines = request.getMedicines().stream()
                 .map(dto -> Medicine.builder()
@@ -48,14 +54,16 @@ public class PrescriptionService {
                         .build())
                 .collect(Collectors.toList());
 
-        prescription.setMedicines(medicines);
+        prescription.getMedicines().addAll(medicines);
         return prescriptionRepository.save(prescription);
     }
 
+    @Transactional(readOnly = true)
     public List<Prescription> getPatientPrescriptions(Long patientId) {
         return prescriptionRepository.findByAppointment_Patient_Id(patientId);
     }
 
+    @Transactional(readOnly = true)
     public List<Prescription> getDoctorPrescriptions(Long doctorId) {
         return prescriptionRepository.findByDoctorIdOrderByCreatedAtDesc(doctorId);
     }

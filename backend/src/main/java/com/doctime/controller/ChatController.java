@@ -14,7 +14,6 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -39,8 +38,7 @@ public class ChatController {
                 appointmentId,
                 dto.getSenderId(),
                 dto.getContent(),
-                dto.getType() != null ? MessageType.valueOf(dto.getType()) : MessageType.TEXT
-        );
+                dto.getType() != null ? MessageType.valueOf(dto.getType()) : MessageType.TEXT);
         dto.setSentAt(saved.getSentAt().toString());
         messagingTemplate.convertAndSend("/topic/chat/" + appointmentId, dto);
     }

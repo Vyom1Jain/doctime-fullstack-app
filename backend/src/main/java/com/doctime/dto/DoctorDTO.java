@@ -17,10 +17,12 @@ public class DoctorDTO {
     private Gender gender;
     private Integer experienceYears;
     private String qualification;
+    private String registrationNumber;
     private String bio;
     private Double consultationFee;
     private List<String> languages;
     private Double rating;
     private Integer totalReviews;
     private Boolean availableForConsultation;
+    private String availability;
 }
