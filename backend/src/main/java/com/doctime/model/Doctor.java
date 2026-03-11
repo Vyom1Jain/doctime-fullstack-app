@@ -11,10 +11,13 @@ import java.util.List;
 
 @Entity
 @Table(name = "doctors")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = {"user", "appointments", "prescriptions"})
 public class Doctor {
 
     @Id
@@ -63,7 +66,6 @@ public class Doctor {
     @Builder.Default
     private Boolean availableForConsultation = true;
 
-    // Availability JSON stored as text
     @Column(length = 2000)
     private String availability;
 

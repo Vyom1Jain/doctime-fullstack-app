@@ -13,10 +13,13 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "transactions")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = {"patient", "doctor"})
 @EntityListeners(AuditingEntityListener.class)
 public class Transaction {
 

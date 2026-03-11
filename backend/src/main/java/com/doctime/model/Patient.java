@@ -12,10 +12,13 @@ import java.util.List;
 
 @Entity
 @Table(name = "patients")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = {"user", "appointments", "medicalReports", "donations"})
 public class Patient {
 
     @Id
@@ -26,30 +29,25 @@ public class Patient {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private LocalDate dateOfBirth;
-
     @Enumerated(EnumType.STRING)
     private Gender gender;
+
+    private LocalDate dateOfBirth;
 
     @Enumerated(EnumType.STRING)
     private BloodGroup bloodGroup;
 
     @Column(length = 500)
-    private String address;
-
-    private String city;
-    private String state;
-    private String country;
-    private String pincode;
-
-    @Column(length = 1000)
-    private String medicalHistory;
-
-    @Column(length = 500)
     private String allergies;
 
-    private Double height; // in cm
-    private Double weight; // in kg
+    @Column(length = 500)
+    private String chronicConditions;
+
+    @Column(length = 500)
+    private String currentMedications;
+
+    private String emergencyContactName;
+    private String emergencyContactPhone;
 
     @JsonIgnore
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
@@ -64,5 +62,5 @@ public class Patient {
     @JsonIgnore
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
     @Builder.Default
-    private List<Transaction> transactions = new ArrayList<>();
+    private List<Donation> donations = new ArrayList<>();
 }

@@ -17,10 +17,13 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = {"patient", "doctor"})
 @EntityListeners(AuditingEntityListener.class)
 public class User implements UserDetails {
 
@@ -69,6 +72,12 @@ public class User implements UserDetails {
     @JsonIgnore
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Doctor doctor;
+
+    @JsonIgnore
+    @Override
+    public String getPassword() {
+        return password;
+    }
 
     @JsonIgnore
     @Override

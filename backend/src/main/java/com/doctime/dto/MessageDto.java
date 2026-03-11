@@ -1,20 +1,6 @@
 package com.doctime.dto;
 
-import com.doctime.model.enums.MessageType;
-import lombok.Data;
-
-import java.time.LocalDateTime;
-
-@Data
-public class MessageDTO {
-    private Long id;
-    private Long appointmentId;
-    private Long senderId;
-    private String senderName;
-    private MessageType type;
-    private String content;
-    private String fileUrl;
-    private String fileName;
-    private Boolean isRead;
-    private LocalDateTime sentAt;
-}
+// This file intentionally redirects to MessageDTO.java
+// The public class MessageDTO must be in MessageDTO.java
+// This file is kept empty to avoid the duplicate class error.
+// See MessageDTO.java for the actual class definition.

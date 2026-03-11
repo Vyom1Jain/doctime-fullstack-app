@@ -14,10 +14,13 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "donations")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = {"patient", "verifiedBy", "requestedDoctor"})
 @EntityListeners(AuditingEntityListener.class)
 public class Donation {
 
@@ -51,7 +54,6 @@ public class Donation {
     @Builder.Default
     private BigDecimal raisedAmount = BigDecimal.ZERO;
 
-    // Type-specific fields
     private String bloodType;
     private Integer unitsNeeded;
 

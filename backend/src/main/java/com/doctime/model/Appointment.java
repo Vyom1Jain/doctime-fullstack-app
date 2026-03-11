@@ -15,10 +15,13 @@ import java.util.List;
 
 @Entity
 @Table(name = "appointments")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = {"patient", "doctor", "messages", "prescription", "videoNote"})
 @EntityListeners(AuditingEntityListener.class)
 public class Appointment {
 
