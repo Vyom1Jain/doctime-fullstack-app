@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token')
     const userData = localStorage.getItem('user')
-    
+
     if (token && userData) {
       setUser(JSON.parse(userData))
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
@@ -29,24 +29,24 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const response = await axios.post('/api/auth/login', { email, password })
     const { token, ...userData } = response.data
-    
+
     localStorage.setItem('token', token)
     localStorage.setItem('user', JSON.stringify(userData))
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
     setUser(userData)
-    
+
     return userData
   }
 
   const signup = async (data) => {
     const response = await axios.post('/api/auth/signup', data)
     const { token, ...userData } = response.data
-    
+
     localStorage.setItem('token', token)
     localStorage.setItem('user', JSON.stringify(userData))
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
     setUser(userData)
-    
+
     return userData
   }
 
@@ -57,9 +57,31 @@ export const AuthProvider = ({ children }) => {
     setUser(null)
   }
 
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#f0f4f8'
+      }}>
+        <div style={{
+          width: '48px',
+          height: '48px',
+          border: '4px solid #e2e8f0',
+          borderTop: '4px solid #3b82f6',
+          borderRadius: '50%',
+          animation: 'spin 0.8s linear infinite'
+        }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    )
+  }
+
   return (
     <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   )
 }
