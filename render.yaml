@@ -1,9 +1,3 @@
-databases:
-  - name: vyom-doctime-db
-    plan: free
-    databaseName: doctime
-    user: doctime_user
-
 services:
   # -- Backend (Spring Boot via Docker) --
   - type: web
@@ -14,26 +8,13 @@ services:
     dockerfilePath: ./Dockerfile
     healthCheckPath: /actuator/health
     envVars:
-      - key: DB_HOST
-        fromDatabase:
-          name: vyom-doctime-db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: vyom-doctime-db
-          property: port
-      - key: DB_NAME
-        fromDatabase:
-          name: vyom-doctime-db
-          property: database
+      - key: SPRING_DATASOURCE_URL
+        sync: false   # Set this manually in Render dashboard to your Neon connection string
+                      # Format: jdbc:postgresql://<neon-host>/<dbname>?sslmode=require
       - key: SPRING_DATASOURCE_USERNAME
-        fromDatabase:
-          name: vyom-doctime-db
-          property: user
+        sync: false   # Your Neon database username
       - key: SPRING_DATASOURCE_PASSWORD
-        fromDatabase:
-          name: vyom-doctime-db
-          property: password
+        sync: false   # Your Neon database password
       - key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
         value: org.postgresql.Driver
       - key: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
