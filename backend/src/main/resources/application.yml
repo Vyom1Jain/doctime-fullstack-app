@@ -7,10 +7,20 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
   datasource:
+    # NEON / PRODUCTION: Set SPRING_DATASOURCE_URL as a single connection string, e.g.:
+    # jdbc:postgresql://<host>/<dbname>?sslmode=require
+    # LOCAL DEV: Falls back to DB_HOST/DB_PORT/DB_NAME variables
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:doctime}}
     username: ${SPRING_DATASOURCE_USERNAME:${DB_USERNAME:root}}
     password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:}}
     driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.postgresql.Driver}
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 3
+      minimum-idle: 1
+      idle-timeout: 60000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
   jpa:
     hibernate:
       ddl-auto: update
